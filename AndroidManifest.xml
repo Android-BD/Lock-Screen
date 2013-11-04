@@ -4,7 +4,7 @@
       android:versionCode="1"
       android:versionName="1.0">
 
-<uses-sdk android:minSdkVersion="4"/>
+<uses-sdk android:minSdkVersion="9"/>
     <application android:icon="@drawable/icon" android:label="@string/pattern_screen">
         <activity android:name="com.edse.edu.SetPasswordActivity"
         		 android:screenOrientation="portrait"
@@ -15,5 +15,15 @@
             </intent-filter>
         </activity>
 
+		 <activity android:name="com.edse.edu.ResetPasswordActivity"
+        		 android:screenOrientation="portrait"
+                  android:label="@string/pattern_screen">
+        </activity>
+        
+         <activity android:name="com.edse.edu.UnlockActivity"
+        		 android:screenOrientation="portrait"
+                  android:label="@string/pattern_screen">
+        </activity>
+        
     </application>
 </manifest>

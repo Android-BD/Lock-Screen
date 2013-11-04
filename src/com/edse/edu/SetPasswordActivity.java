@@ -1,143 +1,113 @@
 package com.edse.edu;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class SetPasswordActivity extends Activity implements
-		SensorEventListener
+public class SetPasswordActivity extends Activity implements SensorEventListener
 {
-	// Directory where data file is stored in application directory
-
-	
-	private StringBuilder moveBuilder = new StringBuilder();
+	private SensorManager sensorManager;
+	private boolean color = false;
+	private View view;
+	private long lastUpdate;
+	private int count = 0;
+	private int turn = 1;
 	private StringBuilder password = new StringBuilder();
-	private String keepTrackOfPassword = null;
-	//private final float NOISE = (float) 2.0;
-	private float[] history = new float[2];
-	private String[] direction = { "NONE" };
-	private SensorManager manager = null;
-	private Sensor accelerometer = null;
-	private int countMoves = 0;
-	private ImageView displayArrow = null;
+	private StringBuilder secondConfirmPassword = new StringBuilder();
+
 	private Button cancelRetryButton = null;
 	private Button continueConfirmButton = null;
 	private TextView screenMessage = null;
-	private int seriesOfTurns = 0;
-	private Boolean tryAgain = false;
+	private ImageView displayArrow = null;
+
+	
+	/** Called when the activity is first created. */
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
-		// Call a method to check if the user already has a password.
-		// If there is a file in Android internal storage then there is no need
-		// to set the password right now. Go to the unlock screen. If it is
-		// possible
-		// to compile with the system at a later date than this step might be
-		// different. Not sure if only root devices can attempt a compile of
-		// this system
-		// or if it's even worth the trouble.
-
 		
-		//These following calls just link up variables to actual screen elements in the XML.
-		//Strangely enough similar to javascript's findElementById method :)
-		displayArrow = (ImageView) findViewById(R.id.imageViewArrow);
-		cancelRetryButton = (Button) findViewById(R.id.cancelretrybutton);
-		continueConfirmButton = (Button) findViewById(R.id.continueconfirmbutton);
-		screenMessage = (TextView) findViewById(R.id.y_axis);
-
-		cancelRetryButton.setText("Cancel");
-
 		try
 		{
-
-			//First thing to do in the application is to check the internal storage
-			//on the device. So here I am calling the method in the Util class
-			//to do that.
-			Util.CheckInternalStorage(getApplicationContext());
-		} catch (Exception e)
+			Util.CheckInternalStorage(this);
+		}
+		catch(Exception e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		//requestWindowFeature(Window.FEATURE_NO_TITLE);
+		//getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+			//	WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.setpassword);
+		view = findViewById(R.id.y_axis);
+		view.setBackgroundColor(Color.GREEN);
+		
 
-
-		// Just attaching listeners to the sensors....
-		manager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		accelerometer = manager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
-		manager.registerListener(this, accelerometer,
-				SensorManager.SENSOR_DELAY_NORMAL);
-
-		//The following button actions can be a little confusing but I am
-		//going for a certain look that is really similar to the official Android
-		//security lock steps. As you progress in setting your pattern the text
-		//of the buttons change accordingly. To start off only the cancelRetryButton
-		//has text, which is "Cancel." Then once the user is done with the first pattern
-		//turn the cancelRetryButton changes to "Retry" and the continueConfirmButton
-		//changes to "Continue." Upon pressing continue the user is asked to verify their
-		//pattern. Here the cancelRetryButton shows "Cancel" and the continueConfirmButton
-		//shows "confirm" when the user has entered a pattern that matched their last one.
-		//It's probably a lot easier to see just tinkering with the real lock setup on Android.
-		//Give it a try......
+		screenMessage = (TextView)findViewById(R.id.x_axis);
+		cancelRetryButton = (Button)findViewById(R.id.cancelretrybutton);
+		continueConfirmButton = (Button)findViewById(R.id.continueconfirmbutton);
+		displayArrow = (ImageView)findViewById(R.id.imageViewArrow);
+		cancelRetryButton.setText("Cancel");
+		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		lastUpdate = System.currentTimeMillis();
+		
 		cancelRetryButton.setOnClickListener(new View.OnClickListener()
 		{
 			public void onClick(View view)
 			{
 
-				
 				if (cancelRetryButton.getText().equals("Cancel"))
 				{
 					finish();
 				} else if (cancelRetryButton.getText().equals("Retry"))
 				{
-					countMoves = 0;
-					seriesOfTurns = 0;
-					finish();
+					
+					Toast.makeText(getApplicationContext(), "HEY", Toast.LENGTH_SHORT).show();
+					displayArrow.setImageResource(0);
+					count = 0;
+					turn = 0;
+					screenMessage.setText("Make an unlock pattern:");
+					password.setLength(0);
+					secondConfirmPassword.setLength(0);
 					startActivity(getIntent());
 				}
 
 			}
 		});
-
+		
 		continueConfirmButton.setOnClickListener(new View.OnClickListener()
 		{
 			public void onClick(View view)
 			{
-				if (continueConfirmButton.equals("Continue"))
-				{
-					// WHEN THIS BUTTON SHOWS CONTINUE
-					// THIS STARTS THE SECOND TIME DRAWING THE PATTERN
-					// AND IT MUST MATCH THE PATTERN DRAWN BEFORE.
-					cancelRetryButton.setText("Cancel");
-					screenMessage.setText("Make pattern again to confirm:");
 
-				} else if (continueConfirmButton.equals("Confirm"))
+				if (continueConfirmButton.getText().equals("Continue"))
 				{
-					// CALL UTIL CLASS TO WRITE TO INTERNAL STORAGE AND SAVE
-					// PATTERN
-					Util.WriteToInternalStorage(password.toString(),
-							getApplicationContext());
+					screenMessage.setText("Make pattern again to confirm:");
+					cancelRetryButton.setText("Cancel");
+					continueConfirmButton.setText("");
+					count = 4;
+					turn = -1;
+					
+				} else if (cancelRetryButton.getText().equals("Confirm"))
+				{
+					Util.WriteToInternalStorage(Util.md5(password.toString()), getApplicationContext());
+					Toast.makeText(getApplicationContext(),"Your password has been recorded!", Toast.LENGTH_SHORT).show();
 					finish();
+					
 				}
 
 			}
@@ -147,128 +117,140 @@ public class SetPasswordActivity extends Activity implements
 	@Override
 	public void onSensorChanged(SensorEvent event)
 	{
-
-		// changed directions
-		float xChange = history[0] - event.values[0];
-		float yChange = history[1] - event.values[1];
-
-		history[0] = event.values[0];
-		history[1] = event.values[1];
-
-		// if (xChange < NOISE) xChange = (float)0.0;
-
-		// if (yChange < NOISE) yChange = (float)0.0;
-		// values are multiplied to work with large numbers such as 4 or 5
-		// rather than
-		// 0.348738473484 or -0.00838483.
-
-		//Actually the multiplication here is partially just to make the numbers larger
-		//and easier to deal with. Everything is getting multiplied by the same thing. Right
-		//now it looks like it's working.
-		if (xChange > 2 && (Math.abs(xChange) * 5 > Math.abs(yChange) * 5))
+		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
 		{
-			direction[0] = "LEFT";
-		} else if (xChange < -2
-				&& (Math.abs(xChange) * 5 > Math.abs(yChange) * 5))
-		{
-			direction[0] = "RIGHT";
+			getAccelerometer(event);
 		}
 
-		else if (yChange > 2 && (Math.abs(yChange) * 5 > Math.abs(xChange) * 5))
-		{
-			direction[0] = "BACK";
-		} else if (yChange < -2
-				&& (Math.abs(yChange) * 5 > Math.abs(xChange) * 5))
-		{
-			direction[0] = "FORWARD";
-		}
+	}
 
-		moveBuilder.setLength(0);
-		// builder.append("x: ");
-		moveBuilder.append(direction[0]);
-		// builder.append(" y: ");
-		// builder.append(direction[1]);
+	private void getAccelerometer(SensorEvent event)
+	{
+		String direction = null;
+		float[] values = event.values;
+		// Movement
+		float x = values[0];
+		float y = values[1];
+		float z = values[2];
 
-		String directionMoved = moveBuilder.toString();
-
-		//This whole series of if statements just changes the image arrow on the screen
-		//as the user moves the device. The color of the arrow may be changed later.
-		if (directionMoved.equals("LEFT"))
+		float accelationSquareRoot = (x * x + y * y + z * z)
+				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
+		
+		long actualTime = System.currentTimeMillis();
+		if (accelationSquareRoot >= 2) //
 		{
-			displayArrow.setImageResource(R.drawable.left);
-		} else if (directionMoved.equals("RIGHT"))
-		{
-			displayArrow.setImageResource(R.drawable.right);
-		} else if (directionMoved.equals("FORWARD"))
-		{
-			displayArrow.setImageResource(R.drawable.forward);
-		} else if (directionMoved.equals("BACK"))
-		{
-			displayArrow.setImageResource(R.drawable.back);
-		}
-
-		//Below is a little tricky. Bascially the button text should only change to
-		//certain keywords after the user has made his or her pattern once or twice
-		//depending.
-		password.append(moveBuilder.toString());
-
-		countMoves++;
-
-		if (countMoves == 5 && tryAgain == false)
-		{
-			seriesOfTurns++;
-		}
-
-		if (countMoves == 5 && seriesOfTurns == 1)
-		{
-			cancelRetryButton.setText("Retry");
-			continueConfirmButton.setText("Continue");
-			screenMessage.setText("Pattern recorded.");
-			keepTrackOfPassword = password.toString();
-
-		} else if (countMoves == 5 && seriesOfTurns == 2)
-		{
-			if (keepTrackOfPassword.equals(password.toString()))
+			if (actualTime - lastUpdate < 200)
 			{
-				continueConfirmButton.setText("Confirm");
-				screenMessage.setText("Your new unlock pattern:");
+				return;
+			}
+			lastUpdate = actualTime;
+			if(x > 2 && (Math.abs(x)*5 > Math.abs(y)*2))
+			{
+				direction = "Right";
+				displayArrow.setImageResource(R.drawable.newright);
+				Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
+			
+				
+			}
+			else if(x < -2 && (Math.abs(x)*5 > Math.abs(y)*2))
+			{
+				direction = "Left";
+				displayArrow.setImageResource(R.drawable.newleft);
+				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
+				
+			}
+			else if(y > 2 && (Math.abs(y)*5 > Math.abs(x)*2))
+			{
+				direction = "Forward";
+				displayArrow.setImageResource(R.drawable.newforward);
+				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
+			}
+			else if(y < -2 && (Math.abs(y)*5 > Math.abs(x)*2))
+			{
+				direction = "Back";
+				displayArrow.setImageResource(R.drawable.newback);
+				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
+			}
+			count++;
+			Toast.makeText(this, "Device was shuffed " + count + " " + turn, Toast.LENGTH_SHORT).show();
+			
+			
+			if(turn == 1)
+			{
+			password.append(direction);
+			//Toast.makeText(getApplicationContext(), password.toString(), Toast.LENGTH_SHORT);
+			}
+			
+			if(turn == -1)
+			{
+				secondConfirmPassword.append(direction);
+				
+			}
+			
+			if(count == 4)
+			{
+				
+				StringBuilder display = password;
+				Toast.makeText(this, display.toString(), Toast.LENGTH_SHORT).show();
+				screenMessage.setText("Pattern Recorded. \n " + Util.splitCamelCase(display.toString()));
+				continueConfirmButton.setText("Continue");
+				cancelRetryButton.setText("Retry");
+				displayArrow.setImageResource(0);
+			}
+			
+			if(count == 8)
+			{
+				Toast.makeText(getApplicationContext(), "HERE " + secondConfirmPassword.toString(), Toast.LENGTH_LONG).show();
+				if(secondConfirmPassword.toString().equals(password.toString()))
+				{
+					screenMessage.setText("Your new unlock pattern:");
+					continueConfirmButton.setText("Confirm");
+				}
+				else
+				{
+					screenMessage.setText("Try again:");
+					screenMessage.setText("\n " + Util.splitCamelCase(password.toString()));
+					secondConfirmPassword.setLength(0);
+					count = 4;
+				}
+			}
+			
+			if (color)
+			{
+				view.setBackgroundColor(Color.GREEN);
+
 			} else
 			{
-				//Here this means the new pattern the user made didn't match the
-				//one they made in the first step!
-				
-				screenMessage.setText("Try again:");
-				cancelRetryButton.setText("Cancel");
-				countMoves = 0;
+				view.setBackgroundColor(Color.RED);
 			}
-
+			color = !color;
 		}
+		
 	}
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy)
 	{
-		// nothing to do here
+
 	}
 
-	// standard activity lifecycle methods...
+	@Override
 	protected void onResume()
 	{
-
 		super.onResume();
-
-		manager.registerListener(this, accelerometer,
+		// register this class as a listener for the orientation and
+		// accelerometer sensors
+		sensorManager.registerListener(this,
+				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 				SensorManager.SENSOR_DELAY_NORMAL);
-
 	}
 
+	@Override
 	protected void onPause()
 	{
-
+		// unregister listener
 		super.onPause();
-
-		manager.unregisterListener(this);
-
+		sensorManager.unregisterListener(this);
+		finish();
 	}
-
 }

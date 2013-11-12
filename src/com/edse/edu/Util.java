@@ -23,6 +23,14 @@ public class Util
 	public static void CheckInternalStorage(Context cxt) throws Exception
 	{
 
+		boolean inProduction = true;
+		
+		if(inProduction)
+		{
+			
+		}
+		else
+		{
 		// Throw exception if context is null
 		if (cxt == null)
 		{
@@ -41,7 +49,6 @@ public class Util
 		// Check if file exists
 		if (dataFile.exists())
 		{
-			
 			// Create reader
 			BufferedReader reader = new BufferedReader(new FileReader(dataFile));
 			String line = "";
@@ -67,6 +74,7 @@ public class Util
 			// Change to IOException?
 			throw new Exception(
 					"Error while loading internal file. Unable to read the data file.");
+		}
 		}
 
 	}

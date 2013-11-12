@@ -17,12 +17,16 @@
 
 		 <activity android:name="com.edse.edu.ResetPasswordActivity"
         		 android:screenOrientation="portrait"
-                  android:label="@string/pattern_screen">
+                  android:label="@string/pattern_screen"
+                  >
         </activity>
         
          <activity android:name="com.edse.edu.UnlockActivity"
         		 android:screenOrientation="portrait"
-                  android:label="@string/pattern_screen">
+                  android:label="@string/pattern_screen"
+                  >
+                  
+                  
         </activity>
         
     </application>

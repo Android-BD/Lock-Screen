@@ -7,7 +7,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -31,7 +33,8 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 	private TextView screenMessage = null;
 	private ImageView displayArrow = null;
 
-	
+	long lastDown = 0;
+	long lastDuration = 0;
 	/** Called when the activity is first created. */
 
 	@Override
@@ -53,22 +56,26 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.setpassword);
-		view = findViewById(R.id.y_axis);
-		view.setBackgroundColor(Color.GREEN);
+		//view = findViewById(R.id.y_axis);
 		
-
+		
+		setTitleColor(getResources().getColor(R.color.black));
 		screenMessage = (TextView)findViewById(R.id.x_axis);
+		screenMessage.setText(R.string.unlock_pattern);
 		cancelRetryButton = (Button)findViewById(R.id.cancelretrybutton);
 		continueConfirmButton = (Button)findViewById(R.id.continueconfirmbutton);
+		
 		displayArrow = (ImageView)findViewById(R.id.imageViewArrow);
 		cancelRetryButton.setText("Cancel");
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		lastUpdate = System.currentTimeMillis();
 		
+		
 		cancelRetryButton.setOnClickListener(new View.OnClickListener()
 		{
 			public void onClick(View view)
 			{
+				
 
 				if (cancelRetryButton.getText().equals("Cancel"))
 				{
@@ -76,14 +83,16 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				} else if (cancelRetryButton.getText().equals("Retry"))
 				{
 					
-					Toast.makeText(getApplicationContext(), "HEY", Toast.LENGTH_SHORT).show();
 					displayArrow.setImageResource(0);
 					count = 0;
-					turn = 0;
-					screenMessage.setText("Make an unlock pattern:");
+					turn = 1;
+					screenMessage.setText(R.string.unlock_pattern);
 					password.setLength(0);
 					secondConfirmPassword.setLength(0);
 					startActivity(getIntent());
+					sensorManager.registerListener(SetPasswordActivity.this,
+							sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
 				}
 
 			}
@@ -96,13 +105,16 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 
 				if (continueConfirmButton.getText().equals("Continue"))
 				{
-					screenMessage.setText("Make pattern again to confirm:");
+					
+					screenMessage.setText(R.string.pattern_toconfirm);
 					cancelRetryButton.setText("Cancel");
 					continueConfirmButton.setText("");
-					count = 4;
 					turn = -1;
+					sensorManager.registerListener(SetPasswordActivity.this,
+							sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
 					
-				} else if (cancelRetryButton.getText().equals("Confirm"))
+				} else if (continueConfirmButton.getText().equals("Confirm"))
 				{
 					Util.WriteToInternalStorage(Util.md5(password.toString()), getApplicationContext());
 					Toast.makeText(getApplicationContext(),"Your password has been recorded!", Toast.LENGTH_SHORT).show();
@@ -117,7 +129,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 	@Override
 	public void onSensorChanged(SensorEvent event)
 	{
-		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+		if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
 		{
 			getAccelerometer(event);
 		}
@@ -137,14 +149,14 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
 		
 		long actualTime = System.currentTimeMillis();
-		if (accelationSquareRoot >= 2) //
+		if (accelationSquareRoot >= 1) //
 		{
 			if (actualTime - lastUpdate < 200)
 			{
 				return;
 			}
 			lastUpdate = actualTime;
-			if(x > 2 && (Math.abs(x)*5 > Math.abs(y)*2))
+			if(x > 6 && (Math.abs(x)*5 > Math.abs(y)*2))
 			{
 				direction = "Right";
 				displayArrow.setImageResource(R.drawable.newright);
@@ -152,20 +164,20 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			
 				
 			}
-			else if(x < -2 && (Math.abs(x)*5 > Math.abs(y)*2))
+			else if(x < -6 && (Math.abs(x)*5 > Math.abs(y)*2))
 			{
 				direction = "Left";
 				displayArrow.setImageResource(R.drawable.newleft);
 				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
 				
 			}
-			else if(y > 2 && (Math.abs(y)*5 > Math.abs(x)*2))
+			else if(y > 6 && (Math.abs(y)*5 > Math.abs(x)*2))
 			{
 				direction = "Forward";
 				displayArrow.setImageResource(R.drawable.newforward);
 				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
 			}
-			else if(y < -2 && (Math.abs(y)*5 > Math.abs(x)*2))
+			else if(y < -6 && (Math.abs(y)*5 > Math.abs(x)*2))
 			{
 				direction = "Back";
 				displayArrow.setImageResource(R.drawable.newback);
@@ -175,55 +187,52 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			Toast.makeText(this, "Device was shuffed " + count + " " + turn, Toast.LENGTH_SHORT).show();
 			
 			
-			if(turn == 1)
+			if(turn == 1 && direction != null)
 			{
 			password.append(direction);
 			//Toast.makeText(getApplicationContext(), password.toString(), Toast.LENGTH_SHORT);
 			}
 			
-			if(turn == -1)
+			if(turn == -1 && direction != null)
 			{
 				secondConfirmPassword.append(direction);
 				
 			}
 			
-			if(count == 4)
+			if(count%4 == 0 && turn == 1)
 			{
 				
 				StringBuilder display = password;
 				Toast.makeText(this, display.toString(), Toast.LENGTH_SHORT).show();
+				screenMessage.setText("");
 				screenMessage.setText("Pattern Recorded. \n " + Util.splitCamelCase(display.toString()));
 				continueConfirmButton.setText("Continue");
 				cancelRetryButton.setText("Retry");
 				displayArrow.setImageResource(0);
+				sensorManager.unregisterListener(this);
+				
 			}
 			
-			if(count == 8)
+			if(count%4==0 && turn == -1)
 			{
-				Toast.makeText(getApplicationContext(), "HERE " + secondConfirmPassword.toString(), Toast.LENGTH_LONG).show();
 				if(secondConfirmPassword.toString().equals(password.toString()))
 				{
 					screenMessage.setText("Your new unlock pattern:");
 					continueConfirmButton.setText("Confirm");
+					Toast.makeText(getApplicationContext(), password.toString(), Toast.LENGTH_SHORT).show();
+					
 				}
 				else
 				{
 					screenMessage.setText("Try again:");
-					screenMessage.setText("\n " + Util.splitCamelCase(password.toString()));
+					Toast.makeText(getApplicationContext(), "Try again:\n " + Util.splitCamelCase(password.toString()), Toast.LENGTH_SHORT).show();
 					secondConfirmPassword.setLength(0);
+					displayArrow.setImageResource(0);
 					count = 4;
 				}
 			}
 			
-			if (color)
-			{
-				view.setBackgroundColor(Color.GREEN);
-
-			} else
-			{
-				view.setBackgroundColor(Color.RED);
-			}
-			color = !color;
+			
 		}
 		
 	}
@@ -246,11 +255,17 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 	}
 
 	@Override
+	protected void onStop()
+	{
+		System.exit(0);
+	}
+	@Override
 	protected void onPause()
 	{
 		// unregister listener
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		finish();
+		
 	}
 }

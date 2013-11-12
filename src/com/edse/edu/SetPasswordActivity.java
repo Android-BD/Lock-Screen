@@ -64,10 +64,11 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 		screenMessage.setText(R.string.unlock_pattern);
 		cancelRetryButton = (Button)findViewById(R.id.cancelretrybutton);
 		continueConfirmButton = (Button)findViewById(R.id.continueconfirmbutton);
-		
+		continueConfirmButton.setEnabled(false);
 		displayArrow = (ImageView)findViewById(R.id.imageViewArrow);
 		cancelRetryButton.setText("Cancel");
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		
 		lastUpdate = System.currentTimeMillis();
 		
 		
@@ -82,7 +83,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 					finish();
 				} else if (cancelRetryButton.getText().equals("Retry"))
 				{
-					
+					continueConfirmButton.setEnabled(false);
 					displayArrow.setImageResource(0);
 					count = 0;
 					turn = 1;
@@ -108,7 +109,8 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 					
 					screenMessage.setText(R.string.pattern_toconfirm);
 					cancelRetryButton.setText("Cancel");
-					continueConfirmButton.setText("");
+					continueConfirmButton.setEnabled(false);
+					
 					turn = -1;
 					sensorManager.registerListener(SetPasswordActivity.this,
 							sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -129,7 +131,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 	@Override
 	public void onSensorChanged(SensorEvent event)
 	{
-		if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
+		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
 		{
 			getAccelerometer(event);
 		}
@@ -149,7 +151,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
 		
 		long actualTime = System.currentTimeMillis();
-		if (accelationSquareRoot >= 1) //
+		if (accelationSquareRoot >= 2) //
 		{
 			if (actualTime - lastUpdate < 200)
 			{
@@ -206,6 +208,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				Toast.makeText(this, display.toString(), Toast.LENGTH_SHORT).show();
 				screenMessage.setText("");
 				screenMessage.setText("Pattern Recorded. \n " + Util.splitCamelCase(display.toString()));
+				continueConfirmButton.setEnabled(true);
 				continueConfirmButton.setText("Continue");
 				cancelRetryButton.setText("Retry");
 				displayArrow.setImageResource(0);

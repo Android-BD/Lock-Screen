@@ -83,6 +83,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 					finish();
 				} else if (cancelRetryButton.getText().equals("Retry"))
 				{
+					continueConfirmButton.setText("");
 					continueConfirmButton.setEnabled(false);
 					displayArrow.setImageResource(0);
 					count = 0;
@@ -107,8 +108,9 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				if (continueConfirmButton.getText().equals("Continue"))
 				{
 					
-					screenMessage.setText(R.string.pattern_toconfirm);
+					screenMessage.setText("Pattern to confirm:" + "\n " + Util.splitCamelCase(password.toString()));
 					cancelRetryButton.setText("Cancel");
+					continueConfirmButton.setText("");
 					continueConfirmButton.setEnabled(false);
 					
 					turn = -1;
@@ -158,7 +160,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				return;
 			}
 			lastUpdate = actualTime;
-			if(x > 6 && (Math.abs(x)*5 > Math.abs(y)*2))
+			if(x > 8 && (Math.log(Math.abs(x)) > Math.log(Math.abs(y))))
 			{
 				direction = "Right";
 				displayArrow.setImageResource(R.drawable.newright);
@@ -166,20 +168,20 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			
 				
 			}
-			else if(x < -6 && (Math.abs(x)*5 > Math.abs(y)*2))
+			else if(x < -8 && (Math.log((Math.abs(x))) > Math.log(Math.abs(y))))
 			{
 				direction = "Left";
 				displayArrow.setImageResource(R.drawable.newleft);
 				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
 				
 			}
-			else if(y > 6 && (Math.abs(y)*5 > Math.abs(x)*2))
+			else if(y > 8 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
 			{
 				direction = "Forward";
 				displayArrow.setImageResource(R.drawable.newforward);
 				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
 			}
-			else if(y < -6 && (Math.abs(y)*5 > Math.abs(x)*2))
+			else if(y < -8 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
 			{
 				direction = "Back";
 				displayArrow.setImageResource(R.drawable.newback);
@@ -204,7 +206,24 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			if(count%4 == 0 && turn == 1)
 			{
 				
+				sensorManager.unregisterListener(this);
 				StringBuilder display = password;
+				
+				//VERY RARE CASE WHERE SOMETHING RETURNS NULL OR ONLY THREE DIRECTIONS SHOW UP AS THE RESULT.
+				String check = Util.splitCamelCase(display.toString());
+				int commaCount = 0;
+				for(int i = 0; i < check.length(); i++)
+				{
+					char ch = check.charAt(i);
+					if(ch == ',')
+					{
+						commaCount++;
+					}
+				}
+				
+				
+				if(commaCount == 3)
+				{
 				Toast.makeText(this, display.toString(), Toast.LENGTH_SHORT).show();
 				screenMessage.setText("");
 				screenMessage.setText("Pattern Recorded. \n " + Util.splitCamelCase(display.toString()));
@@ -212,26 +231,39 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				continueConfirmButton.setText("Continue");
 				cancelRetryButton.setText("Retry");
 				displayArrow.setImageResource(0);
-				sensorManager.unregisterListener(this);
+				}
+				else
+				{
+					
+				}
+				
 				
 			}
 			
 			if(count%4==0 && turn == -1)
 			{
+				sensorManager.unregisterListener(this);
 				if(secondConfirmPassword.toString().equals(password.toString()))
 				{
 					screenMessage.setText("Your new unlock pattern:");
 					continueConfirmButton.setText("Confirm");
 					Toast.makeText(getApplicationContext(), password.toString(), Toast.LENGTH_SHORT).show();
+					continueConfirmButton.setEnabled(true);
 					
 				}
 				else
 				{
-					screenMessage.setText("Try again:");
-					Toast.makeText(getApplicationContext(), "Try again:\n " + Util.splitCamelCase(password.toString()), Toast.LENGTH_SHORT).show();
+					screenMessage.setTextColor(Color.RED);
+					screenMessage.setText("Try again:\n" + Util.splitCamelCase(password.toString()));
+					
 					secondConfirmPassword.setLength(0);
 					displayArrow.setImageResource(0);
-					count = 4;
+					turn = -1;
+					
+					sensorManager.registerListener(this,
+							sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+					
 				}
 			}
 			

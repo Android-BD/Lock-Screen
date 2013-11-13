@@ -1,12 +1,16 @@
 package com.edse.edu;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -86,6 +90,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 					continueConfirmButton.setText("");
 					continueConfirmButton.setEnabled(false);
 					displayArrow.setImageResource(0);
+					cancelRetryButton.setText("Cancel");
 					count = 0;
 					turn = 1;
 					screenMessage.setText(R.string.unlock_pattern);
@@ -160,7 +165,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				return;
 			}
 			lastUpdate = actualTime;
-			if(x > 8 && (Math.log(Math.abs(x)) > Math.log(Math.abs(y))))
+			if(x > 7 && (Math.log(Math.abs(x)) > Math.log(Math.abs(y))))
 			{
 				direction = "Right";
 				displayArrow.setImageResource(R.drawable.newright);
@@ -168,20 +173,20 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			
 				
 			}
-			else if(x < -8 && (Math.log((Math.abs(x))) > Math.log(Math.abs(y))))
+			else if(x < -7 && (Math.log((Math.abs(x))) > Math.log(Math.abs(y))))
 			{
 				direction = "Left";
 				displayArrow.setImageResource(R.drawable.newleft);
 				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
 				
 			}
-			else if(y > 8 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
+			else if(y > 7 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
 			{
 				direction = "Forward";
 				displayArrow.setImageResource(R.drawable.newforward);
 				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
 			}
-			else if(y < -8 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
+			else if(y < -7 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
 			{
 				direction = "Back";
 				displayArrow.setImageResource(R.drawable.newback);
@@ -234,7 +239,11 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				}
 				else
 				{
-					
+					password.setLength(0);
+					turn = 1;
+					cancelRetryButton.setText("Retry");
+					displayArrow.setImageResource(0);
+					screenMessage.setText("A pattern must be four moves:");
 				}
 				
 				
@@ -289,18 +298,49 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
-	@Override
-	protected void onStop()
-	{
-		System.exit(0);
-	}
+	//@Override
+	//protected void onStop()
+	//{
+		//System.exit(0);
+	//}
 	@Override
 	protected void onPause()
 	{
 		// unregister listener
 		super.onPause();
 		sensorManager.unregisterListener(this);
-		finish();
+		//finish();
 		
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu)
+	{
+		MenuInflater inflater = getMenuInflater();
+		
+		inflater.inflate(R.menu.options_menu,menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch(item.getItemId())
+		{
+		
+		case R.id.settings:
+			//go to settings prefs.
+			startActivity(new Intent(this,
+					PrefsActivity.class));
+			return true;
+		
+		case R.id.about:
+			startActivity(new Intent(this,
+					AboutActivity.class));
+			return true;
+			
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 }

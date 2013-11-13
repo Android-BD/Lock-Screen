@@ -12,5 +12,27 @@
     <string name="password_recorded">Your password has been recorded!</string>
     <string name="yournew_unlock">Your new unlock pattern</string>
     <string name="try_again">Try again:</string>
+    <string name="about_intro">\
     
+    This application aims to provide an extra layer of protection to your Android
+    device like never before! It allows the user to make a four step unlock pattern
+    by moving their device in various directions of their choosing. The internal 
+    accelerometer sensors make detecting this kind of movement possible and provide
+    an abundance of data. The fun/challenging part is controlling the data from these
+    sensors since it is often very sensitive and noisy.\n
+    \n
+    Contributing members from the team are:\n\n
+    
+    
+    Justin Edse\n
+    Bryan Lewis\n
+    Jesse Barron\n
+    Eric Beiersdorfer\n
+    Charlie King\n
+    Joshua Cassidy\n\n
+    
+    
+    
+    
+    </string>
 </resources>

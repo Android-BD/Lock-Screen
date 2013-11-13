@@ -1,0 +1,24 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
+
+    <PreferenceCategory android:title="Simple Preferences" >
+
+        <CheckBoxPreference
+            android:key="sleepLockPref"
+            android:summary="5 seconds after sleep"
+            android:title="Automatically lock" />
+
+        <CheckBoxPreference
+            android:key="enableLockPref"
+            android:summary="Enable lock"
+            android:title="Power button instantly locks" />
+
+        <CheckBoxPreference
+            android:key="passBackupPref"
+            android:summary="Have a back up password"
+            android:title="Backup password" />
+	</PreferenceCategory>
+    
+
+</PreferenceScreen>

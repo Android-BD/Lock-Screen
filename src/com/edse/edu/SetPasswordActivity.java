@@ -56,7 +56,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.setpassword);
-		//view = findViewById(R.id.y_axis);
+		
 		
 		
 		setTitleColor(getResources().getColor(R.color.black));

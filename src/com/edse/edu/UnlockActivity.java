@@ -8,16 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,9 +38,12 @@ public class UnlockActivity extends Activity
 	private ImageView displayArrow = null;
 	private TextView screenMessage = null;
 	private String passwordSaved = null;
-	
+	private SharedPreferences settings;
 	private static final String RECEIVED_PASSWORD = "unlock";
-
+	private Editor myEditor;
+	private String getBackupPin = null;
+	private int numOfTries = 0;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -51,7 +60,34 @@ public class UnlockActivity extends Activity
 		Intent intent = getIntent();
 		passwordSaved = intent.getStringExtra(RECEIVED_PASSWORD);
 
+		
+		//getting shared preferences settings from prefs screen.
+		settings = PreferenceManager.getDefaultSharedPreferences(this);
+		
+        getBackupPin = settings.getString("passBackupPref", null);
+        
+       
+        
+        
+        //IF A CERTAIN NUMBER OF TRIES HAVE GONE BY THEN GIVE THE USER
+        //THE OPTION TO ENTER THEIR PIN IF THEY ENTERED ON ON THE SETTINGS
+        //MENU
+        
+        //PSUEDO CODE MORE OR LESS RIGHT NOW...
+        if(numOfTries == 5 && getBackupPin != null)
+        {
+        	AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+        	
+        	builder.setTitle(R.string.alert_dialog);
+        	
+        	
+        	EditText passTextBox = new EditText(this);
+        	builder.setView(passTextBox);
+        	
+			Dialog dialog = builder.create();
 
+			dialog.show();
+        }
 		
 	}
 

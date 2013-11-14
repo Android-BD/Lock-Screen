@@ -4,18 +4,26 @@
 
     <PreferenceCategory android:title="Simple Preferences" >
 
-        <CheckBoxPreference
-            android:key="sleepLockPref"
+        <ListPreference
+            android:key="list"
+            android:dialogTitle="Choose a time setting"
+            android:entries="@array/times"
+            android:entryValues="@array/times_selected"
             android:summary="5 seconds after sleep"
-            android:title="Automatically lock" />
+            android:title="Automatically lock"
+             />
 
         <CheckBoxPreference
             android:key="enableLockPref"
             android:summary="Enable lock"
             android:title="Power button instantly locks" />
 
-        <CheckBoxPreference
+        <EditTextPreference
             android:key="passBackupPref"
+            android:dialogTitle="Enter a pin number."
+            android:maxLength="15"
+            android:digits="0123456789"
+            android:inputType="number"
             android:summary="Have a back up password"
             android:title="Backup password" />
 	</PreferenceCategory>

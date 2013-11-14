@@ -12,6 +12,7 @@
     <string name="password_recorded">Your password has been recorded!</string>
     <string name="yournew_unlock">Your new unlock pattern</string>
     <string name="try_again">Try again:</string>
+    <string name="alert_dialog">Enter your pin instead:</string>
     <string name="about_intro">\
     
     This application aims to provide an extra layer of protection to your Android

@@ -165,7 +165,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				return;
 			}
 			lastUpdate = actualTime;
-			if(x > 7 && (Math.log(Math.abs(x)) > Math.log(Math.abs(y))))
+			if(x > 7 && ((Math.abs(x)*5) > (Math.abs(y)*2)))
 			{
 				direction = "Right";
 				displayArrow.setImageResource(R.drawable.newright);
@@ -173,20 +173,20 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			
 				
 			}
-			else if(x < -7 && (Math.log((Math.abs(x))) > Math.log(Math.abs(y))))
+			else if(x < -7 && ((Math.abs(x)*5) > (Math.abs(y)*2)))
 			{
 				direction = "Left";
 				displayArrow.setImageResource(R.drawable.newleft);
 				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
 				
 			}
-			else if(y > 7 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
+			else if(y > 7 && ((Math.abs(y)*5) > (Math.abs(x)*2)))
 			{
 				direction = "Forward";
 				displayArrow.setImageResource(R.drawable.newforward);
 				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
 			}
-			else if(y < -7 && (Math.log(Math.abs(y)) > Math.log(Math.abs(x))))
+			else if(y < -7 && ((Math.abs(y)*5) >(Math.abs(x)*2)))
 			{
 				direction = "Back";
 				displayArrow.setImageResource(R.drawable.newback);
@@ -212,6 +212,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			{
 				
 				sensorManager.unregisterListener(this);
+				
 				StringBuilder display = password;
 				
 				//VERY RARE CASE WHERE SOMETHING RETURNS NULL OR ONLY THREE DIRECTIONS SHOW UP AS THE RESULT.

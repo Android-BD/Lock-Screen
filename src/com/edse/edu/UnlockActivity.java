@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -26,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class UnlockActivity extends Activity 
 		
@@ -76,16 +78,28 @@ public class UnlockActivity extends Activity
         //PSUEDO CODE MORE OR LESS RIGHT NOW...
         if(numOfTries == 5 && getBackupPin != null)
         {
-        	AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
         	
-        	builder.setTitle(R.string.alert_dialog);
-        	
-        	
-        	EditText passTextBox = new EditText(this);
-        	builder.setView(passTextBox);
-        	
-			Dialog dialog = builder.create();
-
+			Dialog dialog;
+			final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+			EditText passTextBox = new EditText(this);
+        	dialogBuilder.setView(passTextBox);
+			dialogBuilder.setMessage("Are you sure you want to enter your pin?");
+			dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+			{
+				public void onClick(DialogInterface dialog, int id)
+				{
+					
+					
+				}
+			});
+			dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener()
+			{
+				public void onClick(DialogInterface dialog, int id)
+				{
+					dialog.cancel();
+				}
+			});
+			dialog = dialogBuilder.create();
 			dialog.show();
         }
 		

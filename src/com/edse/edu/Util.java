@@ -23,14 +23,8 @@ public class Util
 	public static void CheckInternalStorage(Context cxt) throws Exception
 	{
 
-		boolean inProduction = true;
 		
-		if(inProduction)
-		{
-			
-		}
-		else
-		{
+		
 		// Throw exception if context is null
 		if (cxt == null)
 		{
@@ -77,7 +71,7 @@ public class Util
 		}
 		}
 
-	}
+	
 
 	public static void WriteToInternalStorage(String password, Context context)
 	{

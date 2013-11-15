@@ -36,6 +36,8 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 	private Button continueConfirmButton = null;
 	private TextView screenMessage = null;
 	private ImageView displayArrow = null;
+	private static int FIRST_TURN = 1;
+	private static int SECOND_TURN = -1;
 
 	long lastDown = 0;
 	long lastDuration = 0;
@@ -92,7 +94,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 					displayArrow.setImageResource(0);
 					cancelRetryButton.setText("Cancel");
 					count = 0;
-					turn = 1;
+					turn = FIRST_TURN;
 					screenMessage.setText(R.string.unlock_pattern);
 					password.setLength(0);
 					secondConfirmPassword.setLength(0);
@@ -118,7 +120,7 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 					continueConfirmButton.setText("");
 					continueConfirmButton.setEnabled(false);
 					
-					turn = -1;
+					turn = SECOND_TURN;
 					sensorManager.registerListener(SetPasswordActivity.this,
 							sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 							SensorManager.SENSOR_DELAY_NORMAL);
@@ -158,63 +160,82 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
 		
 		long actualTime = System.currentTimeMillis();
-		if (accelationSquareRoot >= 2) //
+		if (accelationSquareRoot >= 1.5) //
 		{
-			if (actualTime - lastUpdate < 200)
+			if (actualTime - lastUpdate < 900)
 			{
 				return;
 			}
 			lastUpdate = actualTime;
-			if(x > 7 && ((Math.abs(x)*5) > (Math.abs(y)*2)))
+			if(x > .5 && (Math.abs(x)*2 > Math.abs(y)*2))
 			{
 				direction = "Right";
 				displayArrow.setImageResource(R.drawable.newright);
 				Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
-			
+				sensorManager.unregisterListener(this);
 				
 			}
-			else if(x < -7 && ((Math.abs(x)*5) > (Math.abs(y)*2)))
+			else if(x < -.5 && (Math.abs(x)*2 > Math.abs(y)*2))
 			{
 				direction = "Left";
 				displayArrow.setImageResource(R.drawable.newleft);
 				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
-				
+				sensorManager.unregisterListener(this);
 			}
-			else if(y > 7 && ((Math.abs(y)*5) > (Math.abs(x)*2)))
+			else if(y > .5 && (Math.abs(y)*2 > Math.abs(x)*2))
 			{
 				direction = "Forward";
 				displayArrow.setImageResource(R.drawable.newforward);
 				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
+				sensorManager.unregisterListener(this);
 			}
-			else if(y < -7 && ((Math.abs(y)*5) >(Math.abs(x)*2)))
+			else if(y < -.5 && (Math.abs(y)*2 > Math.abs(x)*2))
 			{
 				direction = "Back";
 				displayArrow.setImageResource(R.drawable.newback);
 				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
+				sensorManager.unregisterListener(this);
 			}
 			count++;
-			Toast.makeText(this, "Device was shuffed " + count + " " + turn, Toast.LENGTH_SHORT).show();
+			
+			if(displayArrow.getDrawable() != null)
+			{
+				Toast.makeText(this, "Device was shuffed " + count + " " + turn, Toast.LENGTH_SHORT).show();
 			
 			
-			if(turn == 1 && direction != null)
+			if(turn == FIRST_TURN && direction != null)
 			{
 			password.append(direction);
 			//Toast.makeText(getApplicationContext(), password.toString(), Toast.LENGTH_SHORT);
+			sensorManager.registerListener(this,
+					sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+					SensorManager.SENSOR_DELAY_NORMAL);
 			}
 			
-			if(turn == -1 && direction != null)
+			if(turn == SECOND_TURN && direction != null)
 			{
 				secondConfirmPassword.append(direction);
+				sensorManager.registerListener(this,
+						sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+						SensorManager.SENSOR_DELAY_NORMAL);
 				
 			}
 			
-			if(count%4 == 0 && turn == 1)
+			if(count%4 == 0 && turn == FIRST_TURN)
 			{
 				
 				sensorManager.unregisterListener(this);
 				
 				StringBuilder display = password;
 				
+				Toast.makeText(this, display.toString(), Toast.LENGTH_SHORT).show();
+				screenMessage.setText("");
+				screenMessage.setText("Pattern Recorded. \n " + Util.splitCamelCase(display.toString()));
+				continueConfirmButton.setEnabled(true);
+				continueConfirmButton.setText("Continue");
+				cancelRetryButton.setText("Retry");
+				displayArrow.setImageResource(0);
+				/*
 				//VERY RARE CASE WHERE SOMETHING RETURNS NULL OR ONLY THREE DIRECTIONS SHOW UP AS THE RESULT.
 				String check = Util.splitCamelCase(display.toString());
 				int commaCount = 0;
@@ -246,11 +267,11 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 					displayArrow.setImageResource(0);
 					screenMessage.setText("A pattern must be four moves:");
 				}
-				
+				*/
 				
 			}
 			
-			if(count%4==0 && turn == -1)
+			if(count%4==0 && turn == SECOND_TURN)
 			{
 				sensorManager.unregisterListener(this);
 				if(secondConfirmPassword.toString().equals(password.toString()))
@@ -279,6 +300,27 @@ public class SetPasswordActivity extends Activity implements SensorEventListener
 			
 			
 		}
+		
+		else
+		{
+			Toast.makeText(this, "Sensor interference. Try again", Toast.LENGTH_SHORT).show();
+			continueConfirmButton.setText("");
+			continueConfirmButton.setEnabled(false);
+			displayArrow.setImageResource(0);
+			cancelRetryButton.setText("Cancel");
+			count--;
+			//if(turn == 1)
+			//turn = 1;
+			screenMessage.setText(R.string.unlock_pattern);
+			password.setLength(0);
+			secondConfirmPassword.setLength(0);
+			startActivity(getIntent());
+			sensorManager.registerListener(SetPasswordActivity.this,
+					sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+					SensorManager.SENSOR_DELAY_NORMAL);
+			
+		}
+		} 
 		
 	}
 

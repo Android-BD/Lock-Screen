@@ -22,53 +22,60 @@ public class Util
 	
 	public static void CheckInternalStorage(Context cxt) throws Exception
 	{
-
+		// TODO: Delete everything above the comments, here...and uncomment everything to set back.
+		String passwordFromFile = md5("LeftRightLeftRight");
 		
+		//Log.println(0, DATA_FILE_NAME, "What the fuck?");
+		System.out.println("What?");
 		
-		// Throw exception if context is null
-		if (cxt == null)
-		{
-			// Change to illegal argument exception?
-			throw new Exception(
-					"Error in reading internal storage. Passed context is null.");
-		}
-
-		String passwordFromFile = null;
-
-		//directory to check
-		File dir = cxt.getDir(DATA_FILE_DIR, Context.MODE_PRIVATE);
-
-		File dataFile = new File(dir, DATA_FILE_NAME);
-
-		// Check if file exists
-		if (dataFile.exists())
-		{
-			// Create reader
-			BufferedReader reader = new BufferedReader(new FileReader(dataFile));
-			String line = "";
-
-			while ((line = reader.readLine()) != null)
-			{
-				
-				passwordFromFile = line;
-				
-			}
-			reader.close();
-
-			// pass the known password to the UnlockActivity so we can compare
-			// it to what the user enters.
-			// make a bundle...
-			Intent goToUnlockActivity = new Intent(cxt, UnlockActivity.class);
-			goToUnlockActivity.putExtra(CASE_TO_UNLOCK, passwordFromFile);
-			cxt.startActivity(goToUnlockActivity);
-		}
-
-		if (!dataFile.canRead())
-		{
-			// Change to IOException?
-			throw new Exception(
-					"Error while loading internal file. Unable to read the data file.");
-		}
+		Intent goToUnlockActivity = new Intent(cxt, UnlockActivity.class);
+		goToUnlockActivity.putExtra(CASE_TO_UNLOCK, passwordFromFile);
+		cxt.startActivity(goToUnlockActivity);
+		
+//		// Throw exception if context is null
+//		if (cxt == null)
+//		{
+//			// Change to illegal argument exception?
+//			throw new Exception(
+//					"Error in reading internal storage. Passed context is null.");
+//		}
+//
+//		String passwordFromFile = null;
+//
+//		//directory to check
+//		File dir = cxt.getDir(DATA_FILE_DIR, Context.MODE_PRIVATE);
+//
+//		File dataFile = new File(dir, DATA_FILE_NAME);
+//
+//		// Check if file exists
+//		if (dataFile.exists())
+//		{
+//			// Create reader
+//			BufferedReader reader = new BufferedReader(new FileReader(dataFile));
+//			String line = "";
+//
+//			while ((line = reader.readLine()) != null)
+//			{
+//				
+//				passwordFromFile = line;
+//				
+//			}
+//			reader.close();
+//
+//			// pass the known password to the UnlockActivity so we can compare
+//			// it to what the user enters.
+//			// make a bundle...
+//			Intent goToUnlockActivity = new Intent(cxt, UnlockActivity.class);
+//			goToUnlockActivity.putExtra(CASE_TO_UNLOCK, passwordFromFile);
+//			cxt.startActivity(goToUnlockActivity);
+//		}
+//
+//		if (!dataFile.canRead())
+//		{
+//			// Change to IOException?
+//			throw new Exception(
+//					"Error while loading internal file. Unable to read the data file.");
+//		}
 		}
 
 	

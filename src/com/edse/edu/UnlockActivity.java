@@ -253,51 +253,75 @@ public class UnlockActivity extends Activity implements SensorEventListener
 					if (getBackupPin != null)
 					{
 
+						
 						final EditText passTextBox = new EditText(this);
-						final AlertDialog pinDialog = new AlertDialog.Builder(
-								this).setView(passTextBox)
-								.setTitle("Enter your pin.")
-								.setPositiveButton("Ok", null)
-								.setNegativeButton("Cancel", null).create();
-						pinDialog
-								.setOnShowListener(new DialogInterface.OnShowListener()
-								{
+						final AlertDialog.Builder pinDialog = new AlertDialog.Builder(this).setView(passTextBox);
+						pinDialog.setMessage("Enter your pin number.");
+						
+						pinDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener()
+						{
+							
+							@Override
+							public void onClick(DialogInterface dialog, int which)
+							{
+								
+								
+							}
+						});
+						
+						pinDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+						{
+							
+							@Override
+							public void onClick(DialogInterface dialog, int which)
+							{
+								
+								
+							}
+						});
+						
+						final AlertDialog dialog = pinDialog.create();
+						dialog.show();
+						
+						//Overriding regular behavior of Android alert dialog.
+						//Overriding the handler immediately after show is probably a better approach than OnShowListener as described below
+				        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
+				              {            
+				                  @Override
+				                  public void onClick(View v)
+				                  {
+				                      Boolean wantToCloseDialog = false;
+				                      
+				                      Editable attemptedPin = passTextBox.getEditableText();
+				                      
+				                      
+				                      if(attemptedPin.equals(getBackupPin))
+				                      {
+				                    	  //finish the activity. Go to home screen.
+				                    	  finish();
+				                      }
+				                      else
+				                      {
+				                    	  passTextBox.setError("Incorrect pin! Please try again.");
+				                    	  wantToCloseDialog = false;
+				                      }
+				                      if(wantToCloseDialog)
+				                          dialog.dismiss();
+				                      
+				                  }
+				              });
 
-									@Override
-									public void onShow(DialogInterface dialog)
-									{
-										Button okayButton = pinDialog
-												.getButton(AlertDialog.BUTTON_POSITIVE);
-										okayButton
-												.setOnClickListener(new View.OnClickListener()
-												{
-
-													@Override
-													public void onClick(View v)
-													{
-														// TODO Auto-generated
-														// method stub
-														Editable attemptedPin = passTextBox
-																.getEditableText();
-
-														if (attemptedPin
-																.toString()
-																.equals(getBackupPin
-																		.toString()))
-														{
-															finish();
-														} else
-														{
-															passTextBox
-																	.setError("Incorrect pin! Please try again.");
-														}
-
-													}
-												});
-
-									}
-								});
-
+				        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener()
+				          {            
+				              @Override
+				              public void onClick(View v)
+				              {
+				                  dialog.dismiss();
+				              }
+				          });
+						
+								
+				
 						// If PIN is incorrect, cancelled or D.N.E., lock for 5
 						// minutes? Go back to unlock motion controls? Go back
 						// to motion controls.

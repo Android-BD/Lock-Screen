@@ -3,17 +3,20 @@ package com.edse.edu;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-public class Util
+public class Util extends Activity
 {
 	private static final String DATA_FILE_DIR = "pass";
 	private static final String DATA_FILE_NAME = "passdata.txt";
@@ -22,68 +25,65 @@ public class Util
 	
 	public static void CheckInternalStorage(Context cxt) throws Exception
 	{
-		// TODO: Delete everything above the comments, here...and uncomment everything to set back.
-		String passwordFromFile = md5("LeftRightLeftRight");
 		
-		//Log.println(0, DATA_FILE_NAME, "What the fuck?");
-		System.out.println("What?");
 		
-		Intent goToUnlockActivity = new Intent(cxt, UnlockActivity.class);
-		goToUnlockActivity.putExtra(CASE_TO_UNLOCK, passwordFromFile);
-		cxt.startActivity(goToUnlockActivity);
 		
-//		// Throw exception if context is null
-//		if (cxt == null)
-//		{
-//			// Change to illegal argument exception?
-//			throw new Exception(
-//					"Error in reading internal storage. Passed context is null.");
-//		}
-//
-//		String passwordFromFile = null;
-//
-//		//directory to check
-//		File dir = cxt.getDir(DATA_FILE_DIR, Context.MODE_PRIVATE);
-//
-//		File dataFile = new File(dir, DATA_FILE_NAME);
-//
-//		// Check if file exists
-//		if (dataFile.exists())
-//		{
-//			// Create reader
-//			BufferedReader reader = new BufferedReader(new FileReader(dataFile));
-//			String line = "";
-//
-//			while ((line = reader.readLine()) != null)
-//			{
-//				
-//				passwordFromFile = line;
-//				
-//			}
-//			reader.close();
-//
-//			// pass the known password to the UnlockActivity so we can compare
-//			// it to what the user enters.
-//			// make a bundle...
-//			Intent goToUnlockActivity = new Intent(cxt, UnlockActivity.class);
-//			goToUnlockActivity.putExtra(CASE_TO_UNLOCK, passwordFromFile);
-//			cxt.startActivity(goToUnlockActivity);
-//		}
-//
-//		if (!dataFile.canRead())
-//		{
-//			// Change to IOException?
-//			throw new Exception(
-//					"Error while loading internal file. Unable to read the data file.");
-//		}
+		
+		// Throw exception if context is null
+		if (cxt == null)
+		{
+			// Change to illegal argument exception?
+			throw new Exception(
+					"Error in reading internal storage. Passed context is null.");
 		}
 
+		String passwordFromFile = null;
+
+		//directory to check
+		File dir = cxt.getFilesDir();
+
+		File dataFile = new File(dir, DATA_FILE_NAME);
+
+		// Check if file exists
+		if (dataFile.exists())
+		{
+			// Create reader
+			BufferedReader reader = new BufferedReader(new FileReader(dataFile));
+			String line = "";
+			int i = 0;
+			while ((line = reader.readLine()) != null)
+			{
+				i++;
+				Log.d("jj", line);
+				passwordFromFile = line;
+				
+			}
+			reader.close();
+
+			// pass the known password to the UnlockActivity so we can compare
+			// it to what the user enters.
+			// make a bundle...
+			Intent goToUnlockActivity = new Intent(cxt, UnlockActivity.class);
+			goToUnlockActivity.putExtra(CASE_TO_UNLOCK, passwordFromFile);
+			((Activity)cxt).startActivityForResult(goToUnlockActivity,0);
+			
+			
+		}
+
+		if (!dataFile.canRead())
+		{
+			// Change to IOException?
+			throw new Exception(
+					"Error while loading internal file. Unable to read the data file.");
+		}
+	}
+	
 	
 
-	public static void WriteToInternalStorage(String password, Context context)
+	public static void WriteToInternalStorage(String password, Context context) throws IOException
 	{
 
-		PrintWriter writer = null;
+		FileWriter writer = null;
 
 		try
 		{
@@ -92,18 +92,23 @@ public class Util
 			// will encrypt later and compare hash password to hash password
 			// if that much security is needed. Though internal storage is
 			// usually
-			// secure enough for most apps already.
-			
+			// secure enough for most apps already by using MODE_PRIVATE.
+			//File dirc = context.getDir(DATA_FILE_DIR, Context.MODE_PRIVATE);
+			//File file = new File(dirc, DATA_FILE_NAME);
+			//boolean deleted = file.delete();
+			//Log.d("DELETED", Boolean.toString(deleted));
+
 			//Making a file directory on the device.
-			File dir = context.getDir(DATA_FILE_DIR, Context.MODE_PRIVATE);
-			Log.d("SEE", dir.getAbsolutePath());
+			
+			File dir = context.getFilesDir();
+			Log.d("SEE ", dir.getAbsolutePath());
 			File dataFile = new File(dir, DATA_FILE_NAME);
 
-			writer = new PrintWriter(dataFile);
-
-			String md5ReturnedPass = Util.md5(password);
+			writer = new FileWriter(dataFile,false);
+            Log.d("DATA FILE", dataFile.getAbsolutePath());
 			
-			writer.print(md5ReturnedPass);
+			String hashPass = Util.md5(password.trim());
+			writer.write(hashPass);
 			
 			writer.flush();
 			writer.close();
@@ -149,4 +154,6 @@ public class Util
 				"(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])",
 				"(?<=[A-Za-z])(?=[^A-Za-z])"), ",");
 	}
+	
+	
 }

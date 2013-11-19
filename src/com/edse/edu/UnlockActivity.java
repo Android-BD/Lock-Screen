@@ -181,7 +181,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
         		if (x_direction.equals("Right"))
         		{
         			direction = "Right";
-        			displayArrow.setImageResource(R.drawable.newright);
+        			displayArrowUnlock.setImageResource(R.drawable.newright);
 					Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
 					sensorManagerUnlock.unregisterListener(this);
 					try {
@@ -197,7 +197,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
         		else
         		{
         			direction = "Left";
-        			displayArrow.setImageResource(R.drawable.newleft);
+        			displayArrowUnlock.setImageResource(R.drawable.newleft);
         			Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
         			sensorManagerUnlock.unregisterListener(this);
 					try {
@@ -224,7 +224,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
         		if (y_direction.equals("Forward"))
         		{
         			direction = "Forward";
-    				displayArrow.setImageResource(R.drawable.newforward);
+        			displayArrowUnlock.setImageResource(R.drawable.newforward);
     				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
     				sensorManagerUnlock.unregisterListener(this);
 					try {
@@ -240,7 +240,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
         		else
         		{
         			direction = "Back";
-    				displayArrow.setImageResource(R.drawable.newback);
+        			displayArrowUnlock.setImageResource(R.drawable.newback);
     				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
     				sensorManagerUnlock.unregisterListener(this);
 					try {
@@ -263,7 +263,9 @@ public class UnlockActivity extends Activity implements SensorEventListener
         last_y = y;
         last_z = z;
         
-        	
+		//System.out.println("0000000000000000000000000000000000000000000000");
+
+		//System.out.println(displayArrow.getDrawable())
 
 			/*****************************************************************************/
 			// If direction != null, append to the current attemptedPassword try
@@ -284,6 +286,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
 
 			if (displayArrowUnlock.getDrawable() != null)
 			{
+
 				if (numOfTries < 3)
 				{
 					// If direction != null, append to the current

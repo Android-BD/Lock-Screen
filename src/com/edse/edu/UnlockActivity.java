@@ -48,7 +48,18 @@ public class UnlockActivity extends Activity implements SensorEventListener
 	private String getBackupPin = null;
 	private int numOfTries = 0;
 	private int count = 0;
-	private long lastUpdate;
+	private long lastUpdate = 0l;
+	private long diffTime = 0l;
+			
+	private String x_direction = "";
+	private String y_direction = "";
+	
+	private float last_x;
+	private float last_y;
+	private float last_z;
+	
+	private ImageView displayArrow = null;
+
 
 	private StringBuilder attemptedPassword = new StringBuilder();
 
@@ -118,44 +129,141 @@ public class UnlockActivity extends Activity implements SensorEventListener
 		float y = values[1];
 		float z = values[2];
 
-		float accelationSquareRoot = (x * x + y * y + z * z)
-				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
+//		float accelationSquareRoot = (x * x + y * y + z * z)
+//				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
 
 		long actualTime = System.currentTimeMillis();
-		if (accelationSquareRoot >= 1.7) //
+		//long diffTime = 0l;
+		// if(instructionTouched == true)
+		// {
+		if ((actualTime - lastUpdate) > 100) // From 100
 		{
-			if (actualTime - lastUpdate < 900)
-			{
-				return;
-			}
+			diffTime = actualTime - lastUpdate;
 			lastUpdate = actualTime;
-			if (x > .75 && (Math.abs(x) * 2 > Math.abs(y) * 2))
-			{
-				direction = "Right";
-				displayArrowUnlock.setImageResource(R.drawable.newright);
-				Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
-				sensorManagerUnlock.unregisterListener(this);
-
-			} else if (x < -.75 && (Math.abs(x) * 2 > Math.abs(y) * 2))
-			{
-				direction = "Left";
-				displayArrowUnlock.setImageResource(R.drawable.newleft);
-				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
-				sensorManagerUnlock.unregisterListener(this);
-			} else if (y > .75 && (Math.abs(y) * 2 > Math.abs(x) * 2))
-			{
-				direction = "Forward";
-				displayArrowUnlock.setImageResource(R.drawable.newforward);
-				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
-				sensorManagerUnlock.unregisterListener(this);
-			} else if (y < -.75 && (Math.abs(y) * 2 > Math.abs(x) * 2))
-			{
-				direction = "Back";
-				displayArrowUnlock.setImageResource(R.drawable.newback);
-				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
-				sensorManagerUnlock.unregisterListener(this);
-			}
-			count++;
+			//System.out.println("here");
+		}
+		else
+		{
+			return;
+		}
+		
+		boolean draw = false;
+		
+        float x_speed = Math.abs(x - last_x) / diffTime * 10000;
+        float y_speed = Math.abs(y - last_y) / diffTime * 10000;
+        
+        if (x - last_x < 0)
+        {
+        	x_direction = "Right";
+        }
+        else
+        {
+        	x_direction = "Left";
+        }
+        
+        if (y - last_y < 0)
+        {
+        	y_direction = "Forward";
+        }
+        else
+        {
+        	y_direction = "Backward";
+        }
+        
+        
+                
+        if (x_speed > y_speed && x_speed > 200)
+        {
+        	if (x_direction != "")
+        	{
+        		System.out.println("shook with direction " + x_direction + " with speed of " + x_speed + " (y_speed = " + y_speed + ")");
+        		
+        		if (x_direction.equals("Right"))
+        		{
+        			direction = "Right";
+        			displayArrow.setImageResource(R.drawable.newright);
+					Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
+					sensorManagerUnlock.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManagerUnlock.registerListener(this, sensorManagerUnlock
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        		else
+        		{
+        			direction = "Left";
+        			displayArrow.setImageResource(R.drawable.newleft);
+        			Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
+        			sensorManagerUnlock.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManagerUnlock.registerListener(this, sensorManagerUnlock
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        	}
+        	
+        	draw = true;
+        	count++;
+        }
+        else if (y_speed > 200)
+        {
+        	if (y_direction != "")
+        	{
+        		System.out.println("shook with direction " + y_direction + " with speed of " + y_speed + " (x_speed = " + x_speed + ")");
+        		
+        		if (y_direction.equals("Forward"))
+        		{
+        			direction = "Forward";
+    				displayArrow.setImageResource(R.drawable.newforward);
+    				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
+    				sensorManagerUnlock.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManagerUnlock.registerListener(this, sensorManagerUnlock
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        		else
+        		{
+        			direction = "Back";
+    				displayArrow.setImageResource(R.drawable.newback);
+    				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
+    				sensorManagerUnlock.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManagerUnlock.registerListener(this, sensorManagerUnlock
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        	}
+        	
+        	draw = true;
+        	count++;
+        }
+        	
+        last_x = x;
+        last_y = y;
+        last_z = z;
+        
+        	
 
 			/*****************************************************************************/
 			// If direction != null, append to the current attemptedPassword try
@@ -295,7 +403,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
 				                      Editable attemptedPin = passTextBox.getEditableText();
 				                      
 				                      
-				                      if(attemptedPin.toString().trim().equals(getBackupPin.toString().trim()))
+				                      if(attemptedPin.equals(getBackupPin))
 				                      {
 				                    	  //finish the activity. Go to home screen.
 				                    	  finish();
@@ -336,7 +444,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
 					}
 
 				}
-			} else
+			} else if (draw == true)
 			{
 				Toast.makeText(this, "Sensor interference. Try again",
 						Toast.LENGTH_SHORT).show();
@@ -355,8 +463,6 @@ public class UnlockActivity extends Activity implements SensorEventListener
 
 			}
 		}
-
-	}
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy)

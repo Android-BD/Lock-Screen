@@ -30,7 +30,8 @@ public class SetPasswordActivity extends Activity implements
 	private SensorManager sensorManager;
 	private boolean color = false;
 	private View view;
-	private long lastUpdate;
+	private long lastUpdate = 0l;
+	private long diffTime = 0l;
 	private int count = 0;
 	public static String globalPassword = null;
 	private StringBuilder password = new StringBuilder();
@@ -47,6 +48,16 @@ public class SetPasswordActivity extends Activity implements
 	long lastDown = 0;
 	long lastDuration = 0;
 	private boolean instructionTouched = false;
+	
+	float last_x = 0f;
+	float last_y = 0f;
+	float last_z = 0f;
+	
+	String x_direction = "";
+	String y_direction = "";
+	
+	String last_x_direction = "";
+	String last_y_direction = "";
 
 	/** Called when the activity is first created. */
 
@@ -195,52 +206,150 @@ public class SetPasswordActivity extends Activity implements
 		float y = values[1];
 		float z = values[2];
 
-		float accelationSquareRoot = (x * x + y * y + z * z)
-				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
+//		float accelationSquareRoot = (x * x + y * y + z * z)
+//				/ (SensorManager.GRAVITY_EARTH * SensorManager.GRAVITY_EARTH);
 
 		long actualTime = System.currentTimeMillis();
+		//long diffTime = 0l;
 		// if(instructionTouched == true)
 		// {
-		if (accelationSquareRoot >= 1.7) //
+		if ((actualTime - lastUpdate) > 100) // From 100
 		{
-			if (actualTime - lastUpdate < 900)
-			{
-				return;
-			}
+			diffTime = actualTime - lastUpdate;
 			lastUpdate = actualTime;
-			if (x > .75 && (Math.abs(x) * 2 > Math.abs(y) * 2))
+			//System.out.println("here");
+		}
+		else
+		{
+			return;
+		}
+		
+		boolean draw = false;
+		
+        float x_speed = Math.abs(x - last_x) / diffTime * 10000;
+        float y_speed = Math.abs(y - last_y) / diffTime * 10000;
+        
+        if (x - last_x < 0)
+        {
+        	x_direction = "Right";
+        }
+        else
+        {
+        	x_direction = "Left";
+        }
+        
+        if (y - last_y < 0)
+        {
+        	y_direction = "Forward";
+        }
+        else
+        {
+        	y_direction = "Backward";
+        }
+        
+        
+                
+        if (x_speed > y_speed && x_speed > 200)
+        {
+        	if (x_direction != "")
+        	{
+        		System.out.println("shook with direction " + x_direction + " with speed of " + x_speed + " (y_speed = " + y_speed + ")");
+        		
+        		if (x_direction.equals("Right"))
+        		{
+        			direction = "Right";
+        			displayArrow.setImageResource(R.drawable.newright);
+					Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
+					sensorManager.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManager.registerListener(this, sensorManager
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        		else
+        		{
+        			direction = "Left";
+        			displayArrow.setImageResource(R.drawable.newleft);
+        			Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
+        			sensorManager.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManager.registerListener(this, sensorManager
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        	}
+        	
+        	draw = true;
+        	count++;
+        }
+        else if (y_speed > 200)
+        {
+        	if (y_direction != "")
+        	{
+        		System.out.println("shook with direction " + y_direction + " with speed of " + y_speed + " (x_speed = " + x_speed + ")");
+        		
+        		if (y_direction.equals("Forward"))
+        		{
+        			direction = "Forward";
+    				displayArrow.setImageResource(R.drawable.newforward);
+    				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
+    				sensorManager.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManager.registerListener(this, sensorManager
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        		else
+        		{
+        			direction = "Back";
+    				displayArrow.setImageResource(R.drawable.newback);
+    				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
+    				sensorManager.unregisterListener(this);
+					try {
+						Thread.sleep(800);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					sensorManager.registerListener(this, sensorManager
+							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+							SensorManager.SENSOR_DELAY_NORMAL);
+        		}
+        	}
+        	
+        	draw = true;
+        	count++;
+        }
+        	
+        last_x = x;
+        last_y = y;
+        last_z = z;
+        
+        
+        /*
+         * Start the old code
+         */
+        
+        if (displayArrow.getDrawable() != null)
 			{
-				direction = "Right";
-				displayArrow.setImageResource(R.drawable.newright);
-				Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
-				sensorManager.unregisterListener(this);
-
-			} else if (x < -.75 && (Math.abs(x) * 2 > Math.abs(y) * 2))
-			{
-				direction = "Left";
-				displayArrow.setImageResource(R.drawable.newleft);
-				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
-				sensorManager.unregisterListener(this);
-			} else if (y > .75 && (Math.abs(y) * 2 > Math.abs(x) * 2))
-			{
-				direction = "Forward";
-				displayArrow.setImageResource(R.drawable.newforward);
-				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
-				sensorManager.unregisterListener(this);
-			} else if (y < -.75 && (Math.abs(y) * 2 > Math.abs(x) * 2))
-			{
-				direction = "Back";
-				displayArrow.setImageResource(R.drawable.newback);
-				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
-				sensorManager.unregisterListener(this);
-			}
-			count++;
-
-			if (displayArrow.getDrawable() != null)
-			{
-				Toast.makeText(this,
-						"Device was shuffed " + count + " " + turn,
-						Toast.LENGTH_SHORT).show();
+//				Toast.makeText(this,
+//						"Device was shuffed " + count + " " + turn,
+//						Toast.LENGTH_SHORT).show();
 
 				if (turn == FIRST_TURN && direction != null)
 				{
@@ -311,7 +420,7 @@ public class SetPasswordActivity extends Activity implements
 
 			}
 
-			else
+			else if (draw == true)
 			{
 				Toast.makeText(this, "Sensor interference. Try again",
 						Toast.LENGTH_SHORT).show();
@@ -330,8 +439,138 @@ public class SetPasswordActivity extends Activity implements
 						SensorManager.SENSOR_DELAY_NORMAL);
 
 			}
+
+//		if (accelationSquareRoot >= 1.7) //
+//		{
+//			if (actualTime - lastUpdate < 900)
+//			{
+//				return;
+//			}
+//			lastUpdate = actualTime;
+//			if (x > .75 && (Math.abs(x) * 2 > Math.abs(y) * 2))
+//			{
+//				direction = "Right";
+//				displayArrow.setImageResource(R.drawable.newright);
+//				Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
+//				sensorManager.unregisterListener(this);
+//
+//			} else if (x < -.75 && (Math.abs(x) * 2 > Math.abs(y) * 2))
+//			{
+//				direction = "Left";
+//				displayArrow.setImageResource(R.drawable.newleft);
+//				Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
+//				sensorManager.unregisterListener(this);
+//			} else if (y > .75 && (Math.abs(y) * 2 > Math.abs(x) * 2))
+//			{
+//				direction = "Forward";
+//				displayArrow.setImageResource(R.drawable.newforward);
+//				Toast.makeText(this, "Forward", Toast.LENGTH_SHORT).show();
+//				sensorManager.unregisterListener(this);
+//			} else if (y < -.75 && (Math.abs(y) * 2 > Math.abs(x) * 2))
+//			{
+//				direction = "Back";
+//				displayArrow.setImageResource(R.drawable.newback);
+//				Toast.makeText(this, "Back", Toast.LENGTH_SHORT).show();
+//				sensorManager.unregisterListener(this);
+//			}
+//			count++;
+//
+//			if (displayArrow.getDrawable() != null)
+//			{
+////				Toast.makeText(this,
+////						"Device was shuffed " + count + " " + turn,
+////						Toast.LENGTH_SHORT).show();
+//
+//				if (turn == FIRST_TURN && direction != null)
+//				{
+//					password.append(direction);
+//					// Toast.makeText(getApplicationContext(),
+//					// password.toString(), Toast.LENGTH_SHORT);
+//					sensorManager.registerListener(this, sensorManager
+//							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+//							SensorManager.SENSOR_DELAY_NORMAL);
+//				}
+//
+//				if (turn == SECOND_TURN && direction != null)
+//				{
+//					secondConfirmPassword.append(direction);
+//					sensorManager.registerListener(this, sensorManager
+//							.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+//							SensorManager.SENSOR_DELAY_NORMAL);
+//
+//				}
+//
+//				if (count % 4 == 0 && turn == FIRST_TURN)
+//				{
+//
+//					sensorManager.unregisterListener(this);
+//
+//					StringBuilder display = password;
+//
+//					Toast.makeText(this, display.toString(), Toast.LENGTH_SHORT)
+//							.show();
+//					screenMessage.setText("");
+//					screenMessage.setText("Pattern Recorded. \n "
+//							+ Util.splitCamelCase(display.toString()));
+//					continueConfirmButton.setEnabled(true);
+//					continueConfirmButton.setText("Continue");
+//					cancelRetryButton.setText("Retry");
+//					displayArrow.setImageResource(0);
+//
+//				}
+//
+//				if (count % 4 == 0 && turn == SECOND_TURN)
+//				{
+//					sensorManager.unregisterListener(this);
+//					if (secondConfirmPassword.toString().equals(
+//							password.toString()))
+//					{
+//						screenMessage.setText("Your new unlock pattern:");
+//						continueConfirmButton.setText("Confirm");
+//						Toast.makeText(getApplicationContext(),
+//								password.toString(), Toast.LENGTH_SHORT).show();
+//						continueConfirmButton.setEnabled(true);
+//						globalPassword = secondConfirmPassword.toString();
+//					} else
+//					{
+//						screenMessage.setTextColor(Color.RED);
+//						screenMessage.setText("Try again:\n"
+//								+ Util.splitCamelCase(password.toString()));
+//
+//						secondConfirmPassword.setLength(0);
+//						displayArrow.setImageResource(0);
+//						turn = SECOND_TURN;
+//
+//						sensorManager.registerListener(this, sensorManager
+//								.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+//								SensorManager.SENSOR_DELAY_NORMAL);
+//
+//					}
+//				}
+//
+//			}
+//
+//			else
+//			{
+//				Toast.makeText(this, "Sensor interference. Try again",
+//						Toast.LENGTH_SHORT).show();
+//				continueConfirmButton.setText("");
+//				continueConfirmButton.setEnabled(false);
+//				displayArrow.setImageResource(0);
+//				cancelRetryButton.setText("Cancel");
+//				count--;
+//				screenMessage.setText(R.string.unlock_pattern);
+//				password.setLength(0);
+//				secondConfirmPassword.setLength(0);
+//				startActivity(getIntent());
+//				sensorManager.registerListener(SetPasswordActivity.this,
+//						sensorManager
+//								.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+//						SensorManager.SENSOR_DELAY_NORMAL);
+//
+//			}
 		}
-	}
+	
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy)

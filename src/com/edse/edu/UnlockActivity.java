@@ -403,7 +403,7 @@ public class UnlockActivity extends Activity implements SensorEventListener
 				                      Editable attemptedPin = passTextBox.getEditableText();
 				                      
 				                      
-				                      if(attemptedPin.equals(getBackupPin))
+				                      if(attemptedPin.toString().trim().equals(getBackupPin.toString().trim()))
 				                      {
 				                    	  //finish the activity. Go to home screen.
 				                    	  finish();
